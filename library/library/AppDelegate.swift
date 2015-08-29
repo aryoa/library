@@ -52,41 +52,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window?.makeKeyAndVisible()
         
         
-////        let first: ListTableViewController = ListTableViewController()
-////        navigationController = UINavigationController(rootViewController: first)
-////        self.window = UIWindow(frame: UIScreen.mainScreen().bounds)
-////        self.window?.rootViewController = navigationController
-////        self.window?.makeKeyAndVisible()
-//        
-//        // タブバーの追加 こちらを参考に
-//        // https://sites.google.com/a/gclue.jp/swift-docs/ni-yinki100-ios/uikit/uitabcontrollerdetabuno-biao-shi
-//        
-//        // タブバーはこちらも参考に
-//        // http://www.tejitak.com/blog/?p=1027
-//
-//        window = UIWindow(frame: UIScreen.mainScreen().bounds)
-//        
-//        // Tabに設定するViewControllerのインスタンスを生成.
-//        let listTableViewTab: UIViewController = ListTableViewController()
-//        let barcodeViewTab: UIViewController = BarcodeViewController()
-//        
-//        // タブを要素に持つArrayの.を作成する.
-//        let tabs = NSArray(objects: listTableViewTab, barcodeViewTab)
-//        
-//        listTableViewTab.tabBarItem = UITabBarItem(title: "リスト", image: nil, selectedImage: nil)
-//        barcodeViewTab.tabBarItem = UITabBarItem(title: "バーコード", image: nil, selectedImage: nil)
-//        
-//        // UITabControllerの作成する.
-//        tabBarController = UITabBarController()
-//        
-//        
-//        // ViewControllerを設定する.
-//        tabBarController?.setViewControllers(tabs as [AnyObject], animated: false)
-//        
-//        // RootViewControllerに設定する.
-//        self.window!.rootViewController = tabBarController
-//        
-//        self.window!.makeKeyAndVisible()
+        // Evernote用に追加
+        let EVERNOTE_HOST = ENSessionHostSandbox
+        let CONSUMER_KEY = "ryo"
+        let CONSUMER_SECRET = "174425a709d7f629"
+        
+        ENSession.setSharedSessionConsumerKey(CONSUMER_KEY, consumerSecret: CONSUMER_SECRET,
+            optionalHost: EVERNOTE_HOST)
+        
+        
+//        // Evernote用に追加
+//        let EVERNOTE_HOST = BootstrapServerBaseURLStringSandbox
+//        let CONSUMER_KEY = "ryo"
+//        let CONSUMER_SECRET = "174425a709d7f629"
+//        EvernoteSession.setSharedSessionHost(EVERNOTE_HOST, consumerKey:CONSUMER_KEY, consumerSecret:CONSUMER_SECRET);
         
 
         
@@ -111,12 +90,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationDidBecomeActive(application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        
+//        // Evernote用に追加
+//        EvernoteSession.sharedSession().handleDidBecomeActive()
     }
 
     func applicationWillTerminate(application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
 
+    
+//    // Evernote用に追加
+//    func application(application: UIApplication, openURL url: NSURL, sourceApplication: String?, annotation: AnyObject?) -> Bool {
+//        var canHandle = false
+//        if "en-" + EvernoteSession.sharedSession().consumerKey == url.scheme{
+//            canHandle = EvernoteSession.sharedSession().canHandleOpenURL(url)
+//        }
+//        return canHandle
+//    }
 
 }
 

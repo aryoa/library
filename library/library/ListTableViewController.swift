@@ -64,6 +64,11 @@ class ListTableViewController: UIViewController, UITableViewDataSource, UITableV
         let racten = RactenAPI(isbn: "978477414234")
         racten.getJSONWithISBN()
         
+        
+        // Evernote用のテスト
+        // たぶん最初にauthenticateWithViewControllerをやる必要がある
+
+        
     }
     
     override func didReceiveMemoryWarning() {
@@ -100,8 +105,77 @@ class ListTableViewController: UIViewController, UITableViewDataSource, UITableV
    
     }
     
-    func onClick(){
+    // Evernote用
+    private func postTestNote() {
+        var session = ENSession.sharedSession()
+
+        let static_text = "testtesttest"
+        var note = ENNote()
+        note.title = "testaaaaa"
+        note.content = ENNoteContent(string: static_text)
         
+        session.listNotebooksWithCompletion( {(enNotebooks:[AnyObject]!,listNotebooksError:NSError!) -> Void in
+            
+            if listNotebooksError != nil {
+                println(listNotebooksError?.localizedDescription)
+                return
+            }
+            
+            ENSession.sharedSession().uploadNote(note, notebook: enNotebooks[0] as? ENNotebook, completion: { (noteRef, error) -> Void in
+                
+                if error != nil {
+                    println(error?.localizedDescription)
+                    println("ERROR uploadNote")
+                }else{
+                    println("OK uploadNote")
+                }
+            })
+            
+        })
+
+    }
+    
+    
+    func onClick(){
+
+        var session = ENSession.sharedSession()
+        
+        session.authenticateWithViewController(self, preferRegistration: false, completion: { error in
+            if error == nil {
+                
+                
+                session.listNotebooksWithCompletion( {(enNotebooks:[AnyObject]!,listNotebooksError:NSError!) -> Void in
+                    
+                    if listNotebooksError != nil {
+                        println(listNotebooksError?.localizedDescription)
+                        return
+                    }
+                    
+                    println(enNotebooks)
+                    enNotebooks[0]
+//                    enNotebooks.map({println($0.ENNotebook)})
+
+                })
+            } else {
+                println("Authentication error: \(error)")
+                println(error?.localizedDescription)
+
+            }
+        })
+        
+        if (session.isAuthenticated){
+            println("isAuthentucated Yes")
+            postTestNote()
+        }else{
+            println("isAuthentucated NO")
+
+        }
+        
+        
+
+        
+
+        return
         // 遷移するViewを定義する.
         let barcodeViewController: UIViewController = BarcodeViewController()
         
@@ -111,7 +185,7 @@ class ListTableViewController: UIViewController, UITableViewDataSource, UITableV
         // Viewの移動する.
         self.presentViewController(barcodeViewController, animated: true, completion: nil)
 //        
-//        
+        
 //        //UIViewController.viewの座標取得
 //        var x:CGFloat = self.view.bounds.origin.x
 //        var y:CGFloat = self.view.bounds.origin.y
