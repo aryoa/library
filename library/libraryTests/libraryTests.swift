@@ -2,8 +2,8 @@
 //  libraryTests.swift
 //  libraryTests
 //
-//  Created by HIROKI YAMAMOTO on 2015/08/22.
-//  Copyright (c) 2015年 arao. All rights reserved.
+//  Created by ryo on 2015/09/12.
+//  Copyright (c) 2015年 ryo. All rights reserved.
 //
 
 import UIKit
