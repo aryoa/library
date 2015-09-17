@@ -44,8 +44,8 @@ class WebViewController: UIViewController, UIWebViewDelegate {
         self.view.addSubview(self.toolBar!)
         
         // リクエストを生成する
-        var url = NSURL(string: targetURL)
-        var request = NSURLRequest(URL: url!)
+        let url = NSURL(string: targetURL)
+        let request = NSURLRequest(URL: url!)
         
         // 指定したページを読み込む
         self.webView?.loadRequest(request)
@@ -62,7 +62,7 @@ class WebViewController: UIViewController, UIWebViewDelegate {
     }
     
     // WebView を生成する
-    func createWebView(#frame: CGRect) -> UIWebView {
+    func createWebView(frame frame: CGRect) -> UIWebView {
         // UIWebViewのインスタンスを生成
         let _webView = UIWebView()
         
@@ -73,18 +73,13 @@ class WebViewController: UIViewController, UIWebViewDelegate {
         _webView.frame = frame
         
         // ビューサイズの自動調整
-        _webView.autoresizingMask = UIViewAutoresizing.FlexibleRightMargin |
-            UIViewAutoresizing.FlexibleTopMargin |
-            UIViewAutoresizing.FlexibleLeftMargin |
-            UIViewAutoresizing.FlexibleBottomMargin |
-            UIViewAutoresizing.FlexibleWidth |
-            UIViewAutoresizing.FlexibleHeight
+        _webView.autoresizingMask = [UIViewAutoresizing.FlexibleRightMargin, UIViewAutoresizing.FlexibleTopMargin, UIViewAutoresizing.FlexibleLeftMargin, UIViewAutoresizing.FlexibleBottomMargin, UIViewAutoresizing.FlexibleWidth, UIViewAutoresizing.FlexibleHeight]
         
         return _webView
     }
     
     // ツールバーを生成する
-    func createToolBar(#frame: CGRect, position: CGPoint) -> UIToolbar {
+    func createToolBar(frame frame: CGRect, position: CGPoint) -> UIToolbar {
         // UIWebViewのインスタンスを生成
         let _toolBar = UIToolbar()
         
@@ -139,22 +134,22 @@ class WebViewController: UIViewController, UIWebViewDelegate {
     }
     
     // 戻るボタンの処理
-    @IBAction func back(AnyObject) {
+    @IBAction func back(_: AnyObject) {
         self.webView?.goBack()
     }
     
     // 進むボタンの処理
-    @IBAction func forward(AnyObject) {
+    @IBAction func forward(_: AnyObject) {
         self.webView?.goForward()
     }
     
     // 再読み込みボタンの処理
-    @IBAction func refresh(AnyObject) {
+    @IBAction func refresh(_: AnyObject) {
         self.webView?.reload()
     }
     
     // safari で開く
-    @IBAction func safari(AnyObject) {
+    @IBAction func safari(_: AnyObject) {
         let url = self.webView?.request?.URL
         UIApplication.sharedApplication().openURL(url!)
     }

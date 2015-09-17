@@ -33,22 +33,25 @@ class BarcodeViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         
         
         //準備（サイズ調整、ボーダーカラー、カメラオブジェクト取得、エラー処理）
-        self.hview.autoresizingMask =   UIViewAutoresizing.FlexibleTopMargin |
-            UIViewAutoresizing.FlexibleBottomMargin |
-            UIViewAutoresizing.FlexibleLeftMargin |
-            UIViewAutoresizing.FlexibleRightMargin
+        self.hview.autoresizingMask =   [UIViewAutoresizing.FlexibleTopMargin, UIViewAutoresizing.FlexibleBottomMargin, UIViewAutoresizing.FlexibleLeftMargin, UIViewAutoresizing.FlexibleRightMargin]
         self.hview.layer.borderColor = UIColor.greenColor().CGColor
         self.hview.layer.borderWidth = 3
         self.view.addSubview(self.hview)
         let device = AVCaptureDevice.defaultDeviceWithMediaType(AVMediaTypeVideo)
-        var error : NSError? = nil
+        let error : NSError? = nil
         
         //インプット
-        let input : AVCaptureDeviceInput? = AVCaptureDeviceInput.deviceInputWithDevice(device, error: &error) as? AVCaptureDeviceInput
+        var input : AVCaptureDeviceInput?
+        do{
+            input = try AVCaptureDeviceInput(device: device)
+        }catch {
+            // Error handling...
+            return
+        }
         if input != nil {
             session.addInput(input)//カメラインプットセット
         }else {
-            println(error)
+            print(error)
         }
         
         //アウトプット
@@ -56,7 +59,7 @@ class BarcodeViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         output.setMetadataObjectsDelegate(self, queue: dispatch_get_main_queue())
         session.addOutput(output)//プレビューアウトプットセット
         output.metadataObjectTypes = output.availableMetadataObjectTypes
-        prevlayer = AVCaptureVideoPreviewLayer.layerWithSession(session) as! AVCaptureVideoPreviewLayer
+        prevlayer = AVCaptureVideoPreviewLayer(session: session)
         prevlayer.frame = self.view.bounds
         prevlayer.videoGravity = AVLayerVideoGravityResizeAspectFill
         self.view.layer.addSublayer(prevlayer)
@@ -73,8 +76,6 @@ class BarcodeViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
         
         // http://qiita.com/hkato193/items/c36a940c2929a124e416
         
-        var highlightViewRect = CGRectZero
-        var barCodeObject : AVMetadataObject!
         var detectionString : String!
         
         //複数のバーコードの同時取得も可能
@@ -86,12 +87,12 @@ class BarcodeViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             }
             
             if metadata.type == AVMetadataObjectTypeEAN13Code {
-                barCodeObject = self.prevlayer.transformedMetadataObjectForMetadataObject(metadata as! AVMetadataMachineReadableCodeObject)
+                self.prevlayer.transformedMetadataObjectForMetadataObject(metadata as! AVMetadataMachineReadableCodeObject)
                 detectionString = (metadata as! AVMetadataMachineReadableCodeObject).stringValue
                 
-                var prefix: String = (detectionString as NSString).substringToIndex(3)
+                let prefix: String = (detectionString as NSString).substringToIndex(3)
                 if prefix == "978" || prefix == "979" { // ISBNかどうかをチェックする
-                    println(detectionString)
+                    print(detectionString)
                     self.session.stopRunning()
                     self.addBookInfo(detectionString)
                     break
@@ -122,7 +123,7 @@ class BarcodeViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             }
         }else{
             // 登録済みの場合も、前の画面に戻る
-            println("登録済み")
+            print("登録済み")
             self.navigationController?.popViewControllerAnimated(true)
         }
     }
@@ -132,11 +133,10 @@ class BarcodeViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
     func getBookInfoFromRakuten(isbn: String) -> Bool{
         
         let ractenAPI = RactenAPI.sharedInstance
-        var error: NSError?
         let dataDic = ractenAPI.getJSONWithISBN(isbn)
         if dataDic != nil{
             
-            var items: NSArray! = (dataDic["Items"] as? NSArray)
+            let items: NSArray! = (dataDic["Items"] as? NSArray)
             if items == nil{
                 // 楽天APIでなんらかのエラーが返ってきた場合はアラートを表示
                 var message = dataDic["error_description"] as! String?
@@ -145,16 +145,31 @@ class BarcodeViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
                 }
                 let alertController = UIAlertController(title: "ERROR!", message: message, preferredStyle: .Alert)
                 
-                let defaultAction = UIAlertAction(title: "OK", style: .Default, handler: nil)
+                let defaultAction = UIAlertAction(title: "OK", style: .Default, handler: {(action:UIAlertAction!) -> Void in
+                    self.session.startRunning()//開始！
+                })
                 alertController.addAction(defaultAction)
                 
                 presentViewController(alertController, animated: true, completion: nil)
                 return false
                 
             }else{
-                var tmp:NSDictionary! = items[0] as? NSDictionary
+                if items.count == 0{
+                    let message = "Not found"
+                    let alertController = UIAlertController(title: "Warning!", message: message, preferredStyle: .Alert)
+                    
+                    let defaultAction = UIAlertAction(title: "OK", style: .Default, handler: {(action:UIAlertAction!) -> Void in
+                        self.session.startRunning()//開始！
+                    })
+                    alertController.addAction(defaultAction)
+                    
+                    presentViewController(alertController, animated: true, completion:nil)
+                    return false
+                    
+                }
+                let tmp:NSDictionary! = items[0] as? NSDictionary
                 
-                var item = tmp["Item"] as? NSDictionary
+                let item = tmp["Item"] as? NSDictionary
                 // Core Dataに書き込み
                 let coreDataStore = CoreDataStore.sharedInstance
                 coreDataStore.insertToCoreDataWithDictionary(item!)
@@ -164,7 +179,9 @@ class BarcodeViewController: UIViewController, AVCaptureMetadataOutputObjectsDel
             // ネットに繋がっていない場合などは、アラート表示
             let alertController = UIAlertController(title: "ERROR!", message: "Unable to connect to the server", preferredStyle: .Alert)
             
-            let defaultAction = UIAlertAction(title: "OK", style: .Default, handler: nil)
+            let defaultAction = UIAlertAction(title: "OK", style: .Default, handler: {(action:UIAlertAction!) -> Void in
+                self.session.startRunning()//開始！
+            })
             alertController.addAction(defaultAction)
             
             presentViewController(alertController, animated: true, completion: nil)

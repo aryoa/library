@@ -27,15 +27,15 @@ class RactenAPI{
         let applicationId = "1030809188517726343"
         let urlString = "\(api)?format=\(format)&keyword=\(keyword)&booksGenreId=\(booksGenreId)&isbnjan=\(isbn)&applicationId=\(applicationId)"
         
-        var url = NSURL(string:urlString)!
+        let url = NSURL(string:urlString)!
         // リクエストを生成
-        var request = NSURLRequest(URL: url)
+        let request = NSURLRequest(URL: url)
         // 送信処理を始める
-        var data:NSData? = NSURLConnection.sendSynchronousRequest(request, returningResponse: nil, error: nil)
+        let data:NSData? = try? NSURLConnection.sendSynchronousRequest(request, returningResponse: nil)
         
         
         if data != nil{
-            var dict = NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.MutableContainers, error: nil) as! NSDictionary
+            let dict = (try! NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.MutableContainers)) as! NSDictionary
             return dict
             
         }else{

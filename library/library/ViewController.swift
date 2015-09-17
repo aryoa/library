@@ -86,7 +86,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     // セルの値を設定
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
-        let identifier = "BookCell"
         let cell: BookCell = listTableView.dequeueReusableCellWithIdentifier("BookCell", forIndexPath: indexPath) as! BookCell
         
         let bookInfo = self.dataSource[indexPath.row] as? BookInfo
@@ -100,7 +99,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             let req = NSURLRequest(URL:url!)
             
             NSURLConnection.sendAsynchronousRequest(req, queue:NSOperationQueue.mainQueue()){(res, data, err) in
-                let image = UIImage(data:data)
+                let image = UIImage(data:data!)
                 cell.bookImage.image = image
             }
         }

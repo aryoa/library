@@ -30,7 +30,7 @@ class CoreDataStore {
         if let managedObjectContext = appDelegate.managedObjectContext {
             
             let entity = NSEntityDescription.entityForName(self.entityName, inManagedObjectContext: managedObjectContext)
-            var newData = BookInfoEntity(entity: entity!, insertIntoManagedObjectContext: managedObjectContext)
+            let newData = BookInfoEntity(entity: entity!, insertIntoManagedObjectContext: managedObjectContext)
             
             var title = bookInfo["title"] as? String
             if title == nil || title == ""{
@@ -87,6 +87,8 @@ class CoreDataStore {
             newData.itemURL = itemURL!
             newData.isbn = isbn!
         }
+        // AppDelegateクラスに自動生成された saveContext で保存完了
+        appDelegate.saveContext()
     }
 
     
@@ -100,7 +102,7 @@ class CoreDataStore {
         if let managedObjectContext = appDelegate.managedObjectContext {
             
             let entity = NSEntityDescription.entityForName(self.entityName, inManagedObjectContext: managedObjectContext)
-            var newData = BookInfoEntity(entity: entity!, insertIntoManagedObjectContext: managedObjectContext)
+            let newData = BookInfoEntity(entity: entity!, insertIntoManagedObjectContext: managedObjectContext)
             
             newData.title = bookInfo.title
             newData.author = bookInfo.author
@@ -121,7 +123,7 @@ class CoreDataStore {
         let managedObjectContext: NSManagedObjectContext = appDelegate.managedObjectContext!
         let request: NSFetchRequest = NSFetchRequest(entityName: self.entityName)
         request.returnsObjectsAsFaults = false
-        var results: NSArray! = managedObjectContext.executeFetchRequest(request, error: nil)
+        let results: NSArray! = try? managedObjectContext.executeFetchRequest(request)
         
         for data in results{
             let book = BookInfo(title: data.title, author: data.author, image:data.image, publisherName: data.publisherName, itemCaption: data.itemCaption, salesDate: data.salesDate, itemURL: data.itemURL, isbn:data.isbn)
@@ -147,9 +149,9 @@ class CoreDataStore {
             let predicate = NSPredicate(format: "%K = %@", "isbn", isbn)
             fetchRequest.predicate = predicate
             
-            var error: NSError? = nil;
             // フェッチリクエストの実行
-            if var results = managedObjectContext.executeFetchRequest(fetchRequest, error: &error) {
+            do {
+                let results = try managedObjectContext.executeFetchRequest(fetchRequest)
                 for managedObject in results {
                     let entity = managedObject as! BookInfoEntity;
                     //
@@ -157,6 +159,7 @@ class CoreDataStore {
                     //
                     managedObjectContext.deleteObject(entity);
                 }
+            } catch _ as NSError {
             }
             // AppDelegateクラスに自動生成された saveContext で保存完了
             appDelegate.saveContext()
@@ -183,12 +186,14 @@ class CoreDataStore {
             let predicate = NSPredicate(format: "%K = %@", "isbn", isbn)
             fetchRequest.predicate = predicate
             
-            var error: NSError? = nil;
             // フェッチリクエストの実行
-            if var results = managedObjectContext.executeFetchRequest(fetchRequest, error: &error) {
+            do {
+                let results = try managedObjectContext.executeFetchRequest(fetchRequest)
                 if results.count > 0{
                     return true
                 }
+            } catch _ as NSError {
+                
             }
         }
         return false
